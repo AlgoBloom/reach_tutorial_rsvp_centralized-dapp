@@ -55,5 +55,16 @@ export const main = Reach.App(() => {
   // done is boolean, tells us if event is over and it can be cleared from memory, starts as false
   // howMany is a running counter of how many guests have registered but have not checked in
   const [ done, howMany ] =
+    // two invariants and one condition for this parallel reduce
     parallelReduce([ false, 0 ])
+    // guests mapping size must be same as howMany counter count
     .invariant( Guests.size() == howMany, "howMany accurate" )
+    // contract balance must equal the howMany count times the reservation cost
+    .invariant( balance() == howMany * reservation, "balance accurate" )
+    // every parallel reducs can be written as a while loop
+    // better to think about it as its own construct
+    // this is condition for when while loop terminates
+    // condition is that we will continue accepting and reducing 
+    // input events until we are done and howMany is zero
+    // only then is it safe to turn off the ability to check in guests
+    .while( ! ( done && howMany == 0 ) )
