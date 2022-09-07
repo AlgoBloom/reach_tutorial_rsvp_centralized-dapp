@@ -96,3 +96,25 @@ export const main = Reach.App(() => {
         return [ false, howMany + 1 ];
       } ];
     })
+
+    // API for reporting guest attendance
+    // first argument Host.checkin is the API being handled
+    // second argument is the callback function which accepts the guest address and a boolean value for their attendance
+    .api_(Host.checkin, (guest, showed) => {
+      // checks that the participant checking the guest in is the host
+      check(this == host, "not the host");
+      // checks that the guest has a reservation
+      check(isSome(Guests[guest]), "no reservation");
+      // host is not paying anything for first argument
+      return [ 0, (ret) => {
+        // consensus reduction specification function starts by checking that the deadline has passed
+        enforce( thisConsensusTime() >= deadline, "too early" );
+        // deletes the guest from the guest mapping
+        delete Guests[guest];
+        // transferes reservation fee to the guest or host based on attendance
+        transfer(reservation).to(showed ? guest : host);
+        ret(null);
+        // decrements the value of howMany by one
+        return [ true, howMany - 1 ];
+      } ];
+    });
