@@ -44,3 +44,16 @@ export const main = Reach.App(() => {
   enforce( thisConsensusTime() < deadline, "too late" );
   // signal to the creator that the contract has been launched
   Admin.interact.launched(getContract());
+
+  // create new database to hold guest information
+  // stores boolean value for each address key
+  const Guests = new Map(Bool);
+  // star a parralel reduce block
+  // reducing is when a set of data is turned into a single value
+  // reducing set of input events/API calls that occur in parallel
+  // reduce into two values: done and howMany
+  // done is boolean, tells us if event is over and it can be cleared from memory, starts as false
+  // howMany is a running counter of how many guests have registered but have not checked in
+  const [ done, howMany ] =
+    parallelReduce([ false, 0 ])
+    .invariant( Guests.size() == howMany, "howMany accurate" )
