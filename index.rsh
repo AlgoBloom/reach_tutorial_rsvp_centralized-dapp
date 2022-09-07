@@ -1,7 +1,7 @@
 'reach 0.1';
 'use strict';
 
-// defininf the details of one reservation object
+// defininf the details of the event
 const Details = Object({
   name: Bytes(128),
   reservation: UInt,
@@ -29,4 +29,18 @@ export const main = Reach.App(() => {
     // second if they showed up or not
     checkin: Fun([Address, Bool], Null),
   });
+
+  // DApp is initialized
   init();
+
+  Admin.only(() => {
+    const details = declassify(interact.details);
+  });
+  // instance creator publishes details of the event
+  Admin.publish(details);
+    // destructure reservation, deadline and host from details
+    const { reservation, deadline, host } = details;
+  // deadline is enforced here
+  enforce( thisConsensusTime() < deadline, "too late" );
+  // signal to the creator that the contract has been launched
+  Admin.interact.launched(getContract());
