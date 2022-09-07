@@ -1,1 +1,1 @@
-# tutorial_reach-repondez-sil-vous-plait
+Reach RSVP centralized DApp tutorial.
