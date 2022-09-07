@@ -68,3 +68,31 @@ export const main = Reach.App(() => {
     // input events until we are done and howMany is zero
     // only then is it safe to turn off the ability to check in guests
     .while( ! ( done && howMany == 0 ) )
+
+    // havent seen the .api_ component before, it has two arguments
+    // first argument is the API call that is being handled, Guest_register
+    // recond argument is a function that accepts the arguments to call (none in this case)
+    // and specifies action
+    .api_(Guest.register, () => {
+      // action specification function is made of two parts
+      // first, checks that done is not true, that the event hasn't started already
+      check(! done, "event started");
+      // checks that the guest is not already registered
+      check(isNone(Guests[this]), "already registered");
+      // return specifies what should be paid when this call is made (reservation)
+      // also specifies what happens in the consensus when it is called (function)
+      return [ reservation, (ret) => {
+        // the consensus reduction specification function
+        // accepts an argument (traditionally labeled ret for return or k for continuation)
+        // that must be called with the API call result
+        // function can then perform additional checks or effects before yielding the result (by invoking ret and then returning updated values for the reduction)
+        // this function first ensures that the deadline has not passed
+        enforce( thisConsensusTime() < deadline, "too late" );
+        // sets the guest mapping value for the guest address key to true
+        Guests[this] = true;
+        // returns null to the API caller
+        ret(null);
+        // increments the count of howMany by one
+        return [ false, howMany + 1 ];
+      } ];
+    })
